@@ -6,21 +6,21 @@
 
 ```mermaid
 flowchart TB
-  subgraph org["AWS organization — isolated account boundaries"]
+  subgraph org["AWS organization  -  isolated account boundaries"]
     subgraph a["entity-a-prod workload account"]
       ap["P: entity A EKS + DB-less Kong<br/>VPC across 3 AZs<br/>Aurora primary / local SQS / S3"]
       ar["R: entity A EKS + DB-less Kong<br/>VPC across 3 AZs; submitters fenced<br/>Aurora secondary / local SQS / S3"]
-      ap -->|"Aurora Global Database — asynchronous"| ar
+      ap -->|"Aurora Global Database  -  asynchronous"| ar
     end
     subgraph b["entity-b-prod workload account"]
       bp["P: entity B EKS + DB-less Kong<br/>VPC across 3 AZs<br/>Aurora primary / local SQS / S3"]
       br["R: entity B EKS + DB-less Kong<br/>VPC across 3 AZs; submitters fenced<br/>Aurora secondary / local SQS / S3"]
-      bp -->|"Aurora Global Database — asynchronous"| br
+      bp -->|"Aurora Global Database  -  asynchronous"| br
     end
-    subgraph ra["Entity A recovery account — isolated custody"]
+    subgraph ra["Entity A recovery account  -  isolated custody"]
       ba["Immutable AWS Backup vault / Vault Lock<br/>Isolated cleanroom VPC"]
     end
-    subgraph rb["Entity B recovery account — isolated custody"]
+    subgraph rb["Entity B recovery account  -  isolated custody"]
       bb["Immutable AWS Backup vault / Vault Lock<br/>Isolated cleanroom VPC"]
     end
     network["Network account(s)<br/>Regional TGW / DX / VPN / Network Firewall"]
@@ -50,22 +50,22 @@ The detailed cell below depicts an active region. In R before promotion, substit
 flowchart TB
   clients["Internet clients"]
   hybrid["Hybrid clients via regional TGW<br/>Private routes only"]
-  subgraph account["One entity workload account — one region"]
+  subgraph account["One entity workload account  -  one region"]
     cp["AWS-managed EKS control plane<br/>Outside customer VPC; private API access"]
-    subgraph vpc["Customer VPC — SG / subnet / NetworkPolicy boundaries"]
+    subgraph vpc["Customer VPC  -  SG / subnet / NetworkPolicy boundaries"]
       subgraph ingress["Ingress subnets spanning AZ-a / AZ-b / AZ-c"]
         pub["Internet-facing ALB + AWS WAF<br/>Owned by AWS Load Balancer Controller"]
         priv["Private internal ALB<br/>Owned by AWS Load Balancer Controller"]
       end
-      subgraph za["AZ-a — private compute and DB subnets"]
+      subgraph za["AZ-a  -  private compute and DB subnets"]
         ka["Kong replica + payment pods<br/>ClusterIP services"]
         da["Aurora writer (active region)"]
       end
-      subgraph zb["AZ-b — private compute and DB subnets"]
+      subgraph zb["AZ-b  -  private compute and DB subnets"]
         kb["Kong replica + payment pods<br/>ClusterIP services"]
         db["Aurora reader / failover candidate"]
       end
-      subgraph zc["AZ-c — private compute and DB subnets"]
+      subgraph zc["AZ-c  -  private compute and DB subnets"]
         kc["Kong replica + payment pods<br/>ClusterIP services"]
         dc["Aurora reader / failover candidate"]
       end
@@ -107,13 +107,13 @@ flowchart TB
 
 - Kong is a **proposed per-entity, per-region DB-less deployment with KIC**, at least three ready replicas spread across AZs. Enforce topology spread/anti-affinity, disruption budgets and tested spare capacity for an AZ loss; replica count alone does not prove resilience. Payment pods and controllers also require appropriate spreading and recovery capacity.
 - Platform owns Gateway/GatewayClass, `allowedRoutes`, baseline plugins/authentication and private Kong administration. Applications own approved namespaced HTTPRoutes. Dedicated fronting resources belong to the AWS Load Balancer Controller; application route reconciliation belongs to KIC. No arbitrary public NodePort/LoadBalancer services, global plugin overrides or application admin access.
-- The Kong → application hop is TLS/mTLS, even where combined in the diagram. SGs, NetworkPolicy and admission prevent bypass. No Amazon API Gateway or Konnect is involved. DB-less has no configuration DB and uses Git/Kubernetes desired state, not decK sync.
+- The Kong -> application hop is TLS/mTLS, even where combined in the diagram. SGs, NetworkPolicy and admission prevent bypass. No Amazon API Gateway or Konnect is involved. DB-less has no configuration DB and uses Git/Kubernetes desired state, not decK sync.
 - Aurora has regional storage replicated across AZs, a single active regional writer and failover readers. Aurora Global Database adds **asynchronous** cross-region replication; expected AZ-failure zero loss is not a guaranteed regional zero RPO. There is one active global write region; a promoted secondary becomes its new regional writer.
 - The existing AWS matrix lists Aurora PostgreSQL Global Database support in both P and R. Final engine version, features, instance classes, quotas and capacity must be checked before approval. Validate all required EKS, controller, endpoint, backup and network features in each region as well.
 - Terraform owns AWS provisioning; Helm owns Kubernetes workloads, with explicit controller-owned AWS-resource exceptions such as ALBs. Never declare the same resource in two states or under competing reconcilers.
 - Preposition R images/chart digests, routes, keys, certificates, secrets, DNS, network and database capacity. Do not rely on cross-region KMS keys or secret values becoming available automatically.
 - Residency controls apply separately to logs, findings, state, artifacts and backup copies. Cross-border approval is user-confirmed granted; evidence reference remains pending, not regulator-verified.
 
-[Logical flow and control ownership](logical-architecture.md) · [DR architecture](dr-architecture.md) · [Hybrid networking](hybrid-connectivity.md) · [Delivery governance](../governance/deployment-governance.md).
+[Logical flow and control ownership](logical-architecture.md) | [DR architecture](dr-architecture.md) | [Hybrid networking](hybrid-connectivity.md) | [Delivery governance](../governance/deployment-governance.md).
 
-[Provider-native evidence](../appendix/provider-native-evidence.md): **S1** Control Tower; **S2–S3** EKS networking/Pod Identity; **S4** Aurora HA; **S5** global recovery; **S6** region support; **S9–S10** Kong DB-less/KIC; **S11** Backup Vault Lock. These references do not establish deployed readiness.
+[Provider-native evidence](../appendix/provider-native-evidence.md): **S1** Control Tower; **S2-S3** EKS networking/Pod Identity; **S4** Aurora HA; **S5** global recovery; **S6** region support; **S9-S10** Kong DB-less/KIC; **S11** Backup Vault Lock. These references do not establish deployed readiness.

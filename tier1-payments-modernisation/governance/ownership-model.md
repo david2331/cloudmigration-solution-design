@@ -1,6 +1,6 @@
 # Ownership model
 
-**Status: design draft; not implemented.** This is the proposed accountability model, not evidence of deployed controls or tested recovery. Provider references use the supplied source IDs in the [provider-native evidence register](../appendix/provider-native-evidence.md); that register is currently empty and citations do not imply independent verification.
+**Status: design draft; not implemented.** This is the proposed accountability model, not evidence of deployed controls or tested recovery. The [provider-native evidence register](../appendix/provider-native-evidence.md) contains product documentation sources; bank-specific approvals and operational evidence remain to be attached. Citations do not prove deployed readiness.
 
 ## Scope and boundaries
 
@@ -19,6 +19,8 @@
 
 The **platform Kubernetes/Kong release pipeline is a subpipeline of foundation**, never a fourth layer. Team responsibilities within a layer do not create extra delivery layers. Promotions follow [deployment governance](deployment-governance.md) and the [pipeline diagram](../diagrams/deployment-pipelines.md).
 
+Product/application teams own end-to-end application SLOs, including the impact of their dependencies. Platform owns published EKS/Kong service objectives and platform incident response; delegating release execution to Operations does not transfer product SLO accountability.
+
 ### Single resource owner
 
 Terraform provisions AWS infrastructure; Helm owns Kubernetes workloads. Keep Terraform state split by entity, environment and lifecycle, with one state/resource owner and no duplicate AWS declarations. Terraform must not separately manage Helm-owned workloads. Before any ownership transfer, record resource IDs, relinquish the previous reconciler/state binding without destroying the resource, establish the new owner, and prove a clean plan/reconciliation.
@@ -31,7 +33,7 @@ Platform provides workload identity integration; Application defines least-privi
 
 Self-hosted Kong is a Platform-owned product; application teams are its consumers, **not automatically Kong Consumer objects**. The proposal is one DB-less gateway per entity per region, with KIC and at least three gateway replicas spread across availability zones. The private Kong Admin API is accessible only to KIC and platform-privileged administration, not application teams.
 
-Platform owns GatewayClass, Gateway, `allowedRoutes`, baseline authentication/plugins, Kong upgrades and admission policy. Applications may submit approved namespace-scoped HTTPRoutes only; they receive neither global plugin nor Admin API privileges. North-south traffic is ALB + WAF → Kong → ClusterIP applications; hybrid ingress uses a private internal ALB. There is no Amazon API Gateway, Konnect or external Kong control plane. Security groups, network policies and admission controls prevent public NodePort/LoadBalancer bypass. Applications remain responsible for service TLS/mTLS integration, business authorization and idempotency.
+Platform owns GatewayClass, Gateway, `allowedRoutes`, baseline authentication/plugins, Kong upgrades and admission policy. Applications may submit approved namespace-scoped HTTPRoutes only; they receive neither global plugin nor Admin API privileges. North-south traffic is ALB + WAF -> Kong -> ClusterIP applications; hybrid ingress uses a private internal ALB. There is no Amazon API Gateway, Konnect or external Kong control plane. Security groups, network policies and admission controls prevent public NodePort/LoadBalancer bypass. Applications remain responsible for service TLS/mTLS integration, business authorization and idempotency.
 
 DB-less Kong has no configuration database: versioned Git/Kubernetes desired state is the recovery source, with no `decK sync`. Plugin compatibility, licensing, authentication and rate-limit behavior require assessment; local counters must not be represented as a globally enforced limit ([S9](../appendix/provider-native-evidence.md), [S10](../appendix/provider-native-evidence.md)).
 
@@ -62,7 +64,7 @@ Roles: **SEC** Security/compliance; **NET** Network; **PLT** Platform/foundation
 
 ## Data, network and recovery duties
 
-DATA owns Aurora writer/readers with multi-AZ storage: the active regional cluster has a single writer, while R is a read-only global secondary until promotion. There is only one active global write region. P → R replication is asynchronous: near-zero regional RPO is a goal, not guaranteed zero loss. The supplied matrix lists Aurora PostgreSQL Global Database in both regions; final engine/version, feature and capacity checks remain open ([S4](../appendix/provider-native-evidence.md), [S5](../appendix/provider-native-evidence.md), [S6](../appendix/provider-native-evidence.md)).
+DATA owns Aurora writer/readers with multi-AZ storage: the active regional cluster has a single writer, while R is a read-only global secondary until promotion. There is only one active global write region. P -> R replication is asynchronous: near-zero regional RPO is a goal, not guaranteed zero loss. The supplied matrix lists Aurora PostgreSQL Global Database in both regions; final engine/version, feature and capacity checks remain open ([S4](../appendix/provider-native-evidence.md), [S5](../appendix/provider-native-evidence.md), [S6](../appendix/provider-native-evidence.md)).
 
 APP owns region-local SQS handling and replay from a surviving durable ledger/outbox, not queue replication. External payment submissions require idempotency and querying uncertain outcomes before retry. DATA and APP jointly assess gaps in asynchronously replicated records before BUS authorizes safe resumption ([S12](../appendix/provider-native-evidence.md)).
 
@@ -70,4 +72,4 @@ NET owns diverse Direct Connect routes with VPN fallback from on-premises to **b
 
 OPS maintains recovery readiness across preprovisioned EKS, Kong/routes, keys/secrets, images, networks and databases. Before promotion or traffic switching, fence **both old submitters and the old writer**; DNS changes are not fencing. If fencing cannot be established, do not promote into a possible split-brain state. BUS owns the uncertain-commit decision gate, not permission to bypass fencing.
 
-The draft RTO is **≤30 minutes from disruption to safe critical journeys**, unmeasured. Zero loss is expected for an AZ failure within the regional HA design; regional uncertain commits require reconciliation. Cyber restore from entity-specific immutable backups/cleanrooms has a separate, unmeasured RTO and security clearance ([S11](../appendix/provider-native-evidence.md)). See [DR architecture](../diagrams/dr-architecture.md) and the recovery gates in [deployment governance](deployment-governance.md).
+The draft RTO is **<=30 minutes from disruption to safe critical journeys**, unmeasured. Zero loss is expected for an AZ failure within the regional HA design; regional uncertain commits require reconciliation. Cyber restore from entity-specific immutable backups/cleanrooms has a separate, unmeasured RTO and security clearance ([S11](../appendix/provider-native-evidence.md)). See [DR architecture](../diagrams/dr-architecture.md) and the recovery gates in [deployment governance](deployment-governance.md).

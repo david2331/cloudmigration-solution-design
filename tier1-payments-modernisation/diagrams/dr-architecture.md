@@ -6,15 +6,15 @@
 flowchart TB
   incident["Incident command + entity payment owner<br/>Authorize recovery / reconcile uncertain outcomes"]
   operator["Independent approved recovery runner + runbooks<br/>Prepositioned artifacts and emergency access<br/>No live GitHub dependency"]
-  subgraph entity["One entity workload account — repeat for A and B"]
-    subgraph p["P Malaysia — three AZs"]
+  subgraph entity["One entity workload account  -  repeat for A and B"]
+    subgraph p["P Malaysia  -  three AZs"]
       pk["EKS / Kong / payment submitters"]
       pd["Aurora primary: ledger + outbox"]
       pq["Local SQS / DLQ"]
       pk --> pd
       pk --> pq
     end
-    subgraph r["R Singapore — three AZs, preprovisioned"]
+    subgraph r["R Singapore  -  three AZs, preprovisioned"]
       rd["Aurora global secondary<br/>Read-only until controlled promotion"]
       rk["EKS / Kong / routes / network<br/>Keys / secrets / certificates / images<br/>Submitters fenced before activation"]
       rq["Local SQS / DLQ<br/>Rebuilt work, not queue replication"]
@@ -23,7 +23,7 @@ flowchart TB
     end
     pd -->|"Asynchronous replication; non-zero loss possible"| rd
   end
-  subgraph vault["Separate entity recovery account — cyber recovery boundary"]
+  subgraph vault["Separate entity recovery account  -  cyber recovery boundary"]
     immutable["AWS Backup Vault Lock<br/>Approved immutable backup copies"]
     clean["Isolated cleanroom restore<br/>New credentials / integrity and malware checks"]
     immutable --> clean
@@ -46,8 +46,8 @@ flowchart TB
 
 | Scenario | Draft objective | Preconditions and limitations |
 | --- | --- | --- |
-| Single AZ failure | Expected zero loss of committed Aurora transactions; critical journeys restored within the draft ≤30-minute disruption-to-safe-service target | Regional Aurora failover, pod rescheduling, surviving ingress/network capacity and connection retry must be exercised. In-flight partner outcomes still need reconciliation. |
-| Regional disaster | RTO **≤30 minutes from disruption to safe critical journeys**, not from declaration or promotion | Unmeasured target. Includes detection, decision, fencing, promotion, replay, reconciliation and validation. If safety cannot be established, keep affected journeys stopped even if the target is missed. |
+| Single AZ failure | Expected zero loss of committed Aurora transactions; retain critical service within its 99.99% journey error budget | Regional failover, pod rescheduling, surviving capacity and retries must be exercised. The 30-minute disaster ceiling is not an acceptable routine AZ recovery budget; in-flight partner outcomes still need reconciliation. |
+| Regional disaster | RTO **<=30 minutes from disruption to safe critical journeys**, not from declaration or promotion | Unmeasured target. Includes detection, decision, fencing, promotion, replay, reconciliation and validation. If safety cannot be established, keep affected journeys stopped even if the target is missed. |
 | Regional data loss | Near-zero RPO aspiration, **not guaranteed zero** | Global replication is asynchronous. Lag metrics inform exposure but cannot prove the status of every uncertain commit. No acknowledged regional zero-loss claim is made. |
 | Cyber compromise | Separate cleanroom restore RTO/RPO, to be agreed and measured | Immutable backup age, integrity validation, credential rotation, rebuild and business reconciliation dominate; the 30-minute regional target does not apply. |
 
@@ -68,6 +68,6 @@ flowchart TB
 - Recovery accounts contain per-entity immutable backups and isolated cleanroom restores, never the live Aurora global topology. Validate supported backup/copy features, Vault Lock mode/retention, independent KMS custody and restore permissions. Approval for cross-border processing does not implicitly authorize every backup/log export.
 - Exercises must cover AZ loss, regional partition, inaccessible old primary, lagging replication, partner timeouts, duplicate delivery, GitHub outage, and cyber restore. Record actual elapsed time, data exposure, fencing evidence and financial reconciliation; no measured RTO is claimed.
 
-[Deployment topology](deployment-architecture.md) · [Hybrid paths](hybrid-connectivity.md) · [Recovery ownership](../governance/ownership-model.md) · [Emergency governance](../governance/deployment-governance.md).
+[Deployment topology](deployment-architecture.md) | [Hybrid paths](hybrid-connectivity.md) | [Recovery ownership](../governance/ownership-model.md) | [Emergency governance](../governance/deployment-governance.md).
 
 [Provider-native evidence](../appendix/provider-native-evidence.md): **S4** Aurora HA; **S5** global recovery; **S6** region/feature support; **S11** Backup Vault Lock; **S12** SQS. Engine/feature/capacity checks and the exact fencing implementation remain approval gates.

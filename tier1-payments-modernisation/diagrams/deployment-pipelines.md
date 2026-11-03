@@ -13,7 +13,7 @@ flowchart TB
     reviewed --> build
     build --> approval
   end
-  subgraph tooling["AWS tooling account — connected deployment trust boundary"]
+  subgraph tooling["AWS tooling account  -  connected deployment trust boundary"]
     artifacts["Immutable ECR image digest + OCI chart digest<br/>Signed promotion manifest; approved regional copies"]
     runner["Ephemeral deployment runners<br/>No PR code; isolated per trust tier"]
     sts["AWS STS: OIDC exact aud / sub<br/>Separate layer + entity + environment roles"]
@@ -21,13 +21,13 @@ flowchart TB
     approval --> runner
     runner --> sts
   end
-  subgraph target["Selected entity account + environment — P or R"]
+  subgraph target["Selected entity account + environment  -  P or R"]
     f["1 Foundation<br/>Terraform: accounts / VPC / EKS / IAM boundaries"]
     platform["Foundation subpipeline<br/>Helm: controllers / Kong / platform policy"]
     infra["2 Application infrastructure<br/>Terraform: Aurora / SQS / S3 / IAM / secret metadata / alarms"]
     app["3 Application code<br/>Helm: services / immutable images / approved HTTPRoutes<br/>Application-owned DB migration logic"]
     state["S3 Terraform state<br/>Versioning + SSE-KMS + native lockfile<br/>Separate entity / environment / lifecycle states"]
-    eks["Private EKS — three AZs<br/>EKS access + namespace-scoped RBAC"]
+    eks["Private EKS  -  three AZs<br/>EKS access + namespace-scoped RBAC"]
     verify["Canary / SLO / payment probes<br/>Approve promotion or compatible rollback"]
     f --> platform
     f -->|"Versioned infrastructure outputs"| infra
@@ -61,7 +61,7 @@ AWS resources created by controllers have one explicit owner: the AWS Load Balan
 ## Identity and runner rules
 
 - Configure STS trust for the actual issuer `https://token.actions.githubusercontent.com`, exact `aud = sts.amazonaws.com` for the standard AWS audience, and exact intended `sub`. Do not use organization-wide or repository-wide subject wildcards for production deployment.
-- Default environment-bound subject: `repo:ORG/REPO:environment:ENV`. Without an environment, a branch subject is `repo:ORG/REPO:ref:refs/heads/BRANCH`. These are **templates**, not deployable literal values. Inspect actual organization subject customization and GitHub escaping (for example `:` in metadata becomes `%3A`) before writing trust policies.
+- Legacy subject examples are `repo:ORG/REPO:environment:ENV` and `repo:ORG/REPO:ref:refs/heads/BRANCH`. Repositories using immutable subjects include owner/repository IDs. These are **examples**, not deployable literal values. Inspect actual configured subjects and escaping (for example `:` in metadata becomes `%3A`) before writing trust policies.
 - An environment subject does **not** contain the branch. Enforce environment deployment branches/tags, required reviewers, protected branches and workflow-change controls separately. Verify each actual role assumption with negative tests for PRs, wrong refs, environments and entities.
 - Split roles by layer + entity + environment, restrict regional actions where applicable, and avoid one universal deployment role. Foundation subpipeline privilege is a scoped foundation role, not a new delivery layer. Limit session duration, `iam:PassRole`, resource scope and EKS access/RBAC.
 - Untrusted PR code never runs on connected deployment runners or inherits deployment credentials. Use isolated, ephemeral runners with private endpoint connectivity; verify runner cleanup and use immutable reviewed actions/dependencies. Build publication privileges do not grant production deployment rights.
@@ -78,6 +78,6 @@ Terraform state uses versioned, encrypted S3, restricted IAM/KMS and supported S
 
 GitHub-independent emergency recovery uses predeployed resources and independently available approved artifacts/runner credentials. Normal promotion approvals do not replace the [DR fencing and reconciliation gates](dr-architecture.md).
 
-[Deployment governance](../governance/deployment-governance.md) · [Consolidated RACI](../governance/ownership-model.md) · [Kong contracts](logical-architecture.md).
+[Deployment governance](../governance/deployment-governance.md) | [Consolidated RACI](../governance/ownership-model.md) | [Kong contracts](logical-architecture.md).
 
-[Provider-native evidence](../appendix/provider-native-evidence.md): **S3** Pod Identity; **S7** GitHub OIDC; **S8** Terraform S3 backend; **S9–S10** Kong DB-less/KIC. No decK sync is part of this proposed DB-less release model.
+[Provider-native evidence](../appendix/provider-native-evidence.md): **S3** Pod Identity; **S7** GitHub OIDC; **S8** Terraform S3 backend; **S9-S10** Kong DB-less/KIC. No decK sync is part of this proposed DB-less release model.
