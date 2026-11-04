@@ -1,6 +1,6 @@
 # Data integrity and disaster recovery
 
-**Selected cloud: AWS. Task 4 (20%). P = Malaysia `ap-southeast-5`; R = Singapore `ap-southeast-1`. Cross-border approval is user-confirmed as granted.**
+**Selected cloud: AWS. Task 4 (20%). P = Malaysia `ap-southeast-5`; R = Singapore `ap-southeast-1`. Cross-border approval is granted per bank confirmation (assumption C05).**
 
 ## Transaction semantics
 
@@ -69,4 +69,4 @@ Use AWS Backup Vault Lock compliance mode after retention review and its grace p
 
 Recover compromise in a clean-room environment from a verified clean point, trusted Terraform/Helm/image versions and rotated credentials. Investigate restored financial state and reconcile before service resumption. Cyber-recovery has a separately approved, currently unmeasured RTO/RPO; this draft does not claim it fits 30 minutes.
 
-See [DR diagram](../diagrams/dr-architecture.md), [exercise catalogue](../appendix/dr-testing-scenarios.md), [risk register](09-risk-register.md) and [sources S4-S6, S9-S12](../appendix/provider-native-evidence.md).
+See [DR diagram](../diagrams/dr-architecture.md), [exercise catalogue](../appendix/dr-testing-scenarios.md), [risk register](08-risk-register.md) and [sources S4-S6, S9-S12](../appendix/provider-native-evidence.md).

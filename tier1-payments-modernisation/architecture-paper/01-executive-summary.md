@@ -2,7 +2,7 @@
 
 # Executive architecture summary
 
-Modernise the Tier 1 payments platform progressively using independently isolated legal-entity deployments. **Malaysia (`ap-southeast-5`) is primary; Singapore (`ap-southeast-1`) is recovery.** Cross-border permission is user-confirmed as granted; security/compliance must attach the approval record and applicable scope to the implementation evidence.
+Modernise the Tier 1 payments platform progressively using independently isolated legal-entity deployments. **Malaysia (`ap-southeast-5`) is primary; Singapore (`ap-southeast-1`) is recovery.** Cross-border permission is granted per bank confirmation (assumption C05); security/compliance must attach the approval record and applicable scope to the implementation evidence.
 
 The target combines Amazon EKS and Helm for applications, Terraform for infrastructure, GitHub Actions for delivery, and **platform-owned self-hosted Kong** for API gateway capabilities. Application teams consume Kong through approved route configuration; they do not operate shared gateway infrastructure.
 

@@ -26,10 +26,10 @@ This repository currently contains design documents, not runnable Terraform, Hel
 
 Critical journey definitions, throughput/latency, named legal entities, retention periods, precise payment commitment semantics and quantified near-zero RPO remain open. Aurora Global Database support is listed for both regions, but that does not validate every chosen version, feature, quota or capacity class.
 
-Cross-border approval is user-confirmed granted; its document/reference, scope and conditions are not supplied. This draft is not legal or regulatory certification.
+Cross-border approval is granted per bank confirmation (assumption C05); its document/reference, scope and conditions are not supplied. This draft is not legal or regulatory certification.
 
 Kong DB-less/KIC, Gateway API resource compatibility, authentication plugins, license/support model, certificate validation and shared-rate-limit semantics need implementation selection. Do not assume every enterprise plugin is available or DB-less compatible.
 
 The fencing algorithm is unresolved and must cover continued old-region rail access. Regional asynchronous replication may lose acknowledged data. If zero loss is required, the current data proposal is insufficient. Cyber-recovery is not yet demonstrated within the normal regional RTO/RPO.
 
-The ADR is a two-page-equivalent Markdown narrative; actual pagination/readability depends on the final export format. Mermaid diagrams are source diagrams and should be rendered and reviewed in the submission's target viewer before final export.
+The ADR is a two-page-equivalent Markdown narrative; actual pagination/readability depends on the final export format. Diagrams are maintained as draw.io sources with PNG exports at 2x scale; re-export the PNGs after any source edit so the two never diverge.

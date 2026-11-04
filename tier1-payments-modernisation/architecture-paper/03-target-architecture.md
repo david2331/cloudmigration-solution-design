@@ -9,7 +9,7 @@ AWS Organization
   Management account (no payment workloads)
   Security OU
     Security tooling account
-    Residency-controlled log archive account(s)
+    Log archive account (residency-controlled)
   Infrastructure OU
     Network account(s)
     Platform tooling account
@@ -26,11 +26,11 @@ AWS Organization
   Sandbox OU              (no regulated production data)
 ```
 
-`entity-a`/`entity-b` are placeholders for legal entities, not countries. Each production account hosts its own EKS cluster and application data in **P: Malaysia `ap-southeast-5`** and a separate regional recovery deployment in **R: Singapore `ap-southeast-1`**. Regional DR shares the entity production account; cyber-recovery custody is separately isolated. Cross-border approval is user-confirmed; its record and covered data types must be attached.
+`entity-a`/`entity-b` are placeholders for legal entities, not countries. Each production account hosts its own EKS cluster and application data in **P: Malaysia `ap-southeast-5`** and a separate regional recovery deployment in **R: Singapore `ap-southeast-1`**. Regional DR shares the entity production account; cyber-recovery custody is separately isolated. Cross-border approval is granted per bank confirmation (assumption C05); its record and covered data types must be attached.
 
 Provision via AWS Control Tower/Organizations and approved Terraform modules. Restrict regions and dangerous actions with SCPs, retaining narrow documented global-service exceptions. Separate IAM, resource policies, keys and routing enforce entity boundaries. Central security may aggregate permitted findings, not automatically every sensitive payload.
 
-See the [context](../diagrams/context-diagram.md), [logical](../diagrams/logical-architecture.md), and [mandatory deployment diagrams](../diagrams/deployment-architecture.md).
+See the [mandatory architecture diagram](../diagrams/mandatory-architecture.md), and the [context](../diagrams/context-diagram.md), [logical](../diagrams/logical-architecture.md) and [deployment](../diagrams/deployment-architecture.md) diagrams.
 
 ## Three delivery layers
 

@@ -4,9 +4,9 @@
 
 ## Scope and boundaries
 
-- **AWS only:** Malaysia `ap-southeast-5` is primary (P); Singapore `ap-southeast-1` is recovery (R). Cross-border approval is user-confirmed as granted; its evidence reference is pending and has not been regulator-verified.
-- `entity-a-prod` and `entity-b-prod` are separate workload accounts, each with a separate EKS cluster in each region. Separate entity recovery accounts hold immutable backups and cleanroom recovery, **not** the live Aurora Global Database topology.
-- Security, log, network and tooling accounts are separate, with explicit residency controls for logs, backups, state, artifacts and administrative access. Foundation owns account guardrails; Security owns policy and evidence requirements ([S1](../appendix/provider-native-evidence.md)).
+- **AWS only:** Malaysia `ap-southeast-5` is primary (P); Singapore `ap-southeast-1` is recovery (R). Cross-border approval is granted per bank confirmation (assumption C05); its evidence reference is pending and has not been regulator-verified.
+- `entity-a-prod` and `entity-b-prod` are separate workload accounts, each with a separate EKS cluster in each region. Separate entity recovery accounts hold immutable backups and clean-room recovery, **not** the live Aurora Global Database topology.
+- Security tooling, log archive, network and platform tooling accounts are separate, with explicit residency controls for logs, backups, state, artifacts and administrative access. Foundation owns account guardrails; Security owns policy and evidence requirements ([S1](../appendix/provider-native-evidence.md)).
 - The [context](../diagrams/context-diagram.md), [logical architecture](../diagrams/logical-architecture.md) and [deployment architecture](../diagrams/deployment-architecture.md) describe these boundaries. The paper's [threat-control matrix](../architecture-paper/06-threat-control-model.md) remains authoritative; this document does not duplicate it.
 
 ## Exactly three delivery layers
@@ -58,7 +58,7 @@ Roles: **SEC** Security/compliance; **NET** Network; **PLT** Platform/foundation
 | Production promotion, canary and operational rollback | C | C | R | R | C | A/R | C |
 | Regional recovery authorization and uncertain-payment gate | C | C | R | R | R | R | A |
 | Fence, promote, reconcile and switch recovery traffic | C | R | R | R | R | A/R | C |
-| Cyber cleanroom integrity clearance | A/R | C | R | R | R | R | C |
+| Cyber clean-room integrity clearance | A/R | C | R | R | R | R | C |
 | Cyber business-service resumption authorization | R | C | R | R | R | R | A |
 | Exercises, measured recovery evidence and runbook currency | C | R | R | R | R | A/R | C |
 
@@ -72,4 +72,4 @@ NET owns diverse Direct Connect routes with VPN fallback from on-premises to **b
 
 OPS maintains recovery readiness across preprovisioned EKS, Kong/routes, keys/secrets, images, networks and databases. Before promotion or traffic switching, fence **both old submitters and the old writer**; DNS changes are not fencing. If fencing cannot be established, do not promote into a possible split-brain state. BUS owns the uncertain-commit decision gate, not permission to bypass fencing.
 
-The draft RTO is **<=30 minutes from disruption to safe critical journeys**, unmeasured. Zero loss is expected for an AZ failure within the regional HA design; regional uncertain commits require reconciliation. Cyber restore from entity-specific immutable backups/cleanrooms has a separate, unmeasured RTO and security clearance ([S11](../appendix/provider-native-evidence.md)). See [DR architecture](../diagrams/dr-architecture.md) and the recovery gates in [deployment governance](deployment-governance.md).
+The draft RTO is **<=30 minutes from disruption to safe critical journeys**, unmeasured. Zero loss is expected for an AZ failure within the regional HA design; regional uncertain commits require reconciliation. Cyber restore from entity-specific immutable backups/clean-room environments has a separate, unmeasured RTO and security clearance ([S11](../appendix/provider-native-evidence.md)). See [DR architecture](../diagrams/dr-architecture.md) and the recovery gates in [deployment governance](deployment-governance.md).

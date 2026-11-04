@@ -1,46 +1,10 @@
 # Disaster recovery architecture
 
-**Status: design draft; not implemented or exercised.** Each entity recovers independently from Malaysia P (`ap-southeast-5`) to Singapore R (`ap-southeast-1`). Cross-border approval is user-confirmed granted; evidence reference is pending and is not regulator-verified.
+**Status: design draft; not implemented or exercised.** Each entity recovers independently from Malaysia P (`ap-southeast-5`) to Singapore R (`ap-southeast-1`). Cross-border approval is granted per bank confirmation (assumption C05); evidence reference is pending and is not regulator-verified.
 
-```mermaid
-flowchart TB
-  incident["Incident command + entity payment owner<br/>Authorize recovery / reconcile uncertain outcomes"]
-  operator["Independent approved recovery runner + runbooks<br/>Prepositioned artifacts and emergency access<br/>No live GitHub dependency"]
-  subgraph entity["One entity workload account  -  repeat for A and B"]
-    subgraph p["P Malaysia  -  three AZs"]
-      pk["EKS / Kong / payment submitters"]
-      pd["Aurora primary: ledger + outbox"]
-      pq["Local SQS / DLQ"]
-      pk --> pd
-      pk --> pq
-    end
-    subgraph r["R Singapore  -  three AZs, preprovisioned"]
-      rd["Aurora global secondary<br/>Read-only until controlled promotion"]
-      rk["EKS / Kong / routes / network<br/>Keys / secrets / certificates / images<br/>Submitters fenced before activation"]
-      rq["Local SQS / DLQ<br/>Rebuilt work, not queue replication"]
-      rd -->|"Replay surviving ledger / outbox after checks"| rq
-      rq --> rk
-    end
-    pd -->|"Asynchronous replication; non-zero loss possible"| rd
-  end
-  subgraph vault["Separate entity recovery account  -  cyber recovery boundary"]
-    immutable["AWS Backup Vault Lock<br/>Approved immutable backup copies"]
-    clean["Isolated cleanroom restore<br/>New credentials / integrity and malware checks"]
-    immutable --> clean
-  end
-  gate["Safety gate<br/>Old writer AND submitters fenced<br/>Replication loss / uncertain commits assessed"]
-  traffic["Approved DNS / ingress switch<br/>Not a fencing mechanism"]
-  partner["External payment partners<br/>Idempotency + query / reconciliation"]
-  incident --> operator
-  operator -->|"Independent access; stop writes and side effects"| pk
-  operator --> gate
-  gate -->|"Promote only after fencing evidence"| rd
-  gate -->|"Enable only approved safe journeys"| rk
-  rk -->|"Health + reconciliation + authority confirmed"| traffic
-  rk -->|"Controlled submissions after gate"| partner
-  pd -->|"Approved backup copy policy"| immutable
-  clean -.->|"Separate cyber release approval; not automatic failover"| rk
-```
+![DR architecture: recovery authority, P and R regions, safety gate, Aurora asynchronous replication, recovery account and external partners](dr-architecture.png)
+
+Editable source: [dr-architecture.drawio](dr-architecture.drawio) (open in draw.io / diagrams.net).
 
 ## Recovery objectives and safety
 
@@ -49,7 +13,7 @@ flowchart TB
 | Single AZ failure | Expected zero loss of committed Aurora transactions; retain critical service within its 99.99% journey error budget | Regional failover, pod rescheduling, surviving capacity and retries must be exercised. The 30-minute disaster ceiling is not an acceptable routine AZ recovery budget; in-flight partner outcomes still need reconciliation. |
 | Regional disaster | RTO **<=30 minutes from disruption to safe critical journeys**, not from declaration or promotion | Unmeasured target. Includes detection, decision, fencing, promotion, replay, reconciliation and validation. If safety cannot be established, keep affected journeys stopped even if the target is missed. |
 | Regional data loss | Near-zero RPO aspiration, **not guaranteed zero** | Global replication is asynchronous. Lag metrics inform exposure but cannot prove the status of every uncertain commit. No acknowledged regional zero-loss claim is made. |
-| Cyber compromise | Separate cleanroom restore RTO/RPO, to be agreed and measured | Immutable backup age, integrity validation, credential rotation, rebuild and business reconciliation dominate; the 30-minute regional target does not apply. |
+| Cyber compromise | Separate clean-room restore RTO/RPO, to be agreed and measured | Immutable backup age, integrity validation, credential rotation, rebuild and business reconciliation dominate; the 30-minute regional target does not apply. |
 
 ## Ordered regional recovery
 
@@ -65,7 +29,7 @@ flowchart TB
 
 - R is not a just-in-time infrastructure build. Establish routes to both countries, network inspection, local ECR image/chart copies, regional secrets/key access, DB capacity and operational access before an incident.
 - GitHub unavailability must not block predeployed recovery. Maintain approved independently accessible signed/digest-verified artifacts, runbooks and a controlled connected runner with time-bound emergency credentials and audit export. This is a recovery path, not unrestricted CI/CD bypass or permission to run untrusted code.
-- Recovery accounts contain per-entity immutable backups and isolated cleanroom restores, never the live Aurora global topology. Validate supported backup/copy features, Vault Lock mode/retention, independent KMS custody and restore permissions. Approval for cross-border processing does not implicitly authorize every backup/log export.
+- Recovery accounts contain per-entity immutable backups and isolated clean-room restores, never the live Aurora global topology. Validate supported backup/copy features, Vault Lock mode/retention, independent KMS custody and restore permissions. Approval for cross-border processing does not implicitly authorize every backup/log export.
 - Exercises must cover AZ loss, regional partition, inaccessible old primary, lagging replication, partner timeouts, duplicate delivery, GitHub outage, and cyber restore. Record actual elapsed time, data exposure, fencing evidence and financial reconciliation; no measured RTO is claimed.
 
 [Deployment topology](deployment-architecture.md) | [Hybrid paths](hybrid-connectivity.md) | [Recovery ownership](../governance/ownership-model.md) | [Emergency governance](../governance/deployment-governance.md).

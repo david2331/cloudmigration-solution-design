@@ -25,4 +25,4 @@ Record disruption/detection/declaration/promotion/fencing/service-restoration ti
 
 Proposed cadence: component exercises regularly and after material releases, regional recovery quarterly and after topology changes, cyber-recovery on an approved risk-based schedule. Failed integrity or fencing exercises block relevant migration expansion until remediation is demonstrated.
 
-See [data and DR](../architecture-paper/05-data-and-dr.md), [risk register](../architecture-paper/09-risk-register.md) and [DR diagram](../diagrams/dr-architecture.md).
+See [data and DR](../architecture-paper/05-data-and-dr.md), [risk register](../architecture-paper/08-risk-register.md) and [DR diagram](../diagrams/dr-architecture.md).

@@ -7,7 +7,7 @@
 | R01 | Async regional replication loses acknowledged payment tail | Critical | Quantify RPO and transaction exposure; redesign commitment if zero-loss is mandatory | Payments business/risk | Before data architecture approval; replication incidents |
 | R02 | Fencing fails while old region still submits externally | Critical | Enforce exclusive writer/rail authority; partition exercise; stop rather than split brain | Payments service owner | Before regional DR approval; rail protocol changes |
 | R03 | Claimed recovery exceeds 30 minutes | High | Preprovision Singapore dependencies; measure disruption-to-safe-journey recovery | Operations | Each DR exercise and topology change |
-| R04 | Cross-border approval evidence/scope does not cover every copy | High | User confirms granted approval; attach reference and classify ledger, telemetry, backup, state and secrets | Security/compliance | Before provisioning/copy policies; approval amendments |
+| R04 | Cross-border approval evidence/scope does not cover every copy | High | Bank-confirmed approval (C05); attach reference and classify ledger, telemetry, backup, state and secrets | Security/compliance | Before provisioning/copy policies; approval amendments |
 | R05 | Kong plugin/edition/topology cannot implement required auth or limits | High | Evaluate DB-less compatibility, licensing, fail-closed behavior and distributed counter needs | Platform | Before Kong topology sign-off; plugin/version changes |
 | R06 | Platform-wide Kong policy change affects multiple applications | High | Per-entity isolation, staged policy releases, route contract tests and rollback | Platform | Every baseline policy change |
 | R07 | Kubernetes complexity exceeds operational skills | High | Supported platform baseline, training, staffed on-call, upgrade exercises | Platform | Upgrade backlog, incidents, staffing changes |
@@ -22,4 +22,4 @@
 
 All treatments are proposed until evidence is attached. Do not mark risk accepted merely because a service is selected. R01/R02 can invalidate the recovery claim and remain production approval blockers.
 
-See [data and DR](05-data-and-dr.md), [threat controls](06-threat-control-model.md), [migration](07-migration-roadmap.md), and [validation](10-validation-and-limitations.md).
+See [data and DR](05-data-and-dr.md), [threat controls](06-threat-control-model.md), [migration](07-migration-roadmap.md), and [validation](09-validation-and-limitations.md).

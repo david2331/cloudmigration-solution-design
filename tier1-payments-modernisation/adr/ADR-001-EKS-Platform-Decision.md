@@ -1,6 +1,6 @@
 # ADR-001: EKS and Helm for payment applications
 
-**Selected cloud: AWS. Task 7 (10%). Status: proposed architecture; EKS/Helm direction confirmed by user.**
+**Selected cloud: AWS. Task 7 (10%). Status: proposed architecture; EKS/Helm is the bank platform standard.**
 
 An **ADR (Architecture Decision Record)** captures a significant decision, why it was made, alternatives rejected, consequences, risks and review triggers. It preserves reasoning so later teams can revisit a decision without reconstructing the original debate.
 
@@ -10,9 +10,9 @@ The challenge response below is approximately two pages of narrative; final pagi
 
 ### Context and owners
 
-The bank's Tier 1 payments platform must support multiple legal entities, hybrid dependencies, 99.99% critical-journey availability, 30-minute regional recovery and near-zero RPO for committed payments. Malaysia (`ap-southeast-5`) is primary and Singapore (`ap-southeast-1`) is recovery. Cross-border approval is user-confirmed as granted; the formal evidence reference remains to be attached.
+The bank's Tier 1 payments platform must support multiple legal entities, hybrid dependencies, 99.99% critical-journey availability, 30-minute regional recovery and near-zero RPO for committed payments. Malaysia (`ap-southeast-5`) is primary and Singapore (`ap-southeast-1`) is recovery. Cross-border approval is granted per bank confirmation (assumption C05); the formal evidence reference remains to be attached.
 
-Teams disagree about containers, serverless operations and portability. The user has selected Kubernetes and Helm, Terraform infrastructure, GitHub Actions delivery and self-hosted Kong operated by the platform team. This ADR explains why that runtime direction is defensible without claiming it resolves data durability or every operational problem.
+Teams disagree about containers, serverless operations and portability. The bank's platform standard is Kubernetes and Helm, with Terraform infrastructure, GitHub Actions delivery and self-hosted Kong operated by the platform team. This ADR tests whether that runtime choice is defensible on its merits against ECS, Lambda and EC2, without claiming it resolves data durability or every operational problem.
 
 The architecture authority is the decision custodian. Platform and application service owners are accountable for their supported capabilities, with mandatory security, data, operations and business-risk concurrence before production approval.
 
@@ -28,7 +28,7 @@ Keep authoritative ledger data in managed AWS data services, not application pod
 
 ### Rationale
 
-EKS provides a managed Kubernetes control plane while preserving standard container scheduling and deployment interfaces. This fits the chosen Helm operating model and long-running integration services. A central platform team can offer reusable security, networking and release patterns instead of each product assembling them independently.
+EKS provides a managed Kubernetes control plane while preserving standard container scheduling and deployment interfaces [S2]. Long-running integration services, leader-elected rail submitters and Jobs-based reconciliation map directly onto Kubernetes primitives. A central platform team can offer reusable security, networking and release patterns as admission policy instead of each product assembling them independently.
 
 Per-entity clusters limit gateway and workload blast radius. Regional application replicas provide availability while a single authoritative ledger writer avoids unresolved active-active payment conflicts. GitHub OIDC and separated deployment roles limit release authority. None of these controls eliminates the need for application idempotency, reconciliation or disaster fencing.
 
@@ -36,7 +36,7 @@ Kubernetes portability is useful but partial. OCI images, standard resources and
 
 ### Rejected alternatives
 
-**Amazon ECS** is a credible, often simpler container platform. Task definitions/services and EC2 or Fargate capacity can support highly available payment services. It is rejected as the primary runtime because the agreed delivery contract is Kubernetes/Helm and the bank intends to fund that operating model, not because ECS is less secure. If Kubernetes adds insufficient value, ECS is the leading reconsideration option.
+**Amazon ECS** is a credible, often simpler container platform with no control-plane version to upgrade [S15]. It is not rejected for being less secure or less available. It is rejected as the primary runtime for three workload reasons. First, central guardrails: Kubernetes admission policy and Gateway API let the platform team enforce route ownership, image signatures and pod security as declarative policy that product teams self-serve within; on ECS the same rules move into IAM, SCPs and pipeline checks, which are harder to make uniform across many teams and entities. Second, the gateway: the selected Kong Ingress Controller reconciles from Kubernetes resources, so ECS would need a different Kong configuration model and a second release path. Third, workload mix: rail adapters need leader election and fenced single-active submitters, and reconciliation needs Jobs on separate interruptible pools — both native Kubernetes patterns. The weighted assessment in [Task 3](../architecture-paper/04-application-platform-decision.md) scores ECS within 0.2–0.4 of EKS, so the margin is real but narrow; ECS is the documented fallback if the Kubernetes operating cost is not justified.
 
 **AWS Lambda** suits bounded event handlers and automation. Its execution-mode limits, concurrency, retries and downstream connections need workload-specific design. It is not the dominant runtime for the desired uniform container model and long-lived adapters, but exceptions are allowed. Regulation alone is not a reason to reject serverless.
 
@@ -72,4 +72,4 @@ Approve production use only after ownership, security, capacity and operational 
 | D07: Transactional outbox / proposed | Commit state and outbox atomically; idempotent consumers and external outcome reconciliation | Uncoordinated DB/queue dual writes lose consistency; outbox adds relay and deduplication operations | Throughput, ordering or rail semantic change |
 | D08: Recovery custody / proposed | Live DR in entity production account; immutable supported backup copies in isolated recovery account | A live replica alone propagates corruption and shares account-compromise risk | Restore results, key custody, retention or approval scope changes |
 
-Full consequences and controls remain in the [target architecture](../architecture-paper/03-target-architecture.md), [data and DR](../architecture-paper/05-data-and-dr.md), [risk register](../architecture-paper/09-risk-register.md) and [ownership model](../governance/ownership-model.md). Supersede records with explicit rationale rather than silently rewriting an approved historical decision.
+Full consequences and controls remain in the [target architecture](../architecture-paper/03-target-architecture.md), [data and DR](../architecture-paper/05-data-and-dr.md), [risk register](../architecture-paper/08-risk-register.md) and [ownership model](../governance/ownership-model.md). Supersede records with explicit rationale rather than silently rewriting an approved historical decision.

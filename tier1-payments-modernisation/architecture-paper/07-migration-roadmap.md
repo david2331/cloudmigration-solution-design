@@ -30,4 +30,4 @@ Provide named on-call staff, training, runbooks and incident delegation before p
 
 Every temporary adapter, manual reconciliation process, overprivileged exception and legacy host has an owner, risk, target removal wave and expiry. Expired exceptions stop expansion unless the authorized owner renews them with controls.
 
-Tie each wave to the [risk register](09-risk-register.md), [deployment governance](../governance/deployment-governance.md), [acceptance criteria](10-validation-and-limitations.md) and [DR exercises](../appendix/dr-testing-scenarios.md). Calendar dates require a funded delivery plan and are intentionally not invented.
+Tie each wave to the [risk register](08-risk-register.md), [deployment governance](../governance/deployment-governance.md), [acceptance criteria](09-validation-and-limitations.md) and [DR exercises](../appendix/dr-testing-scenarios.md). Calendar dates require a funded delivery plan and are intentionally not invented.

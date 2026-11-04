@@ -2,66 +2,9 @@
 
 **Status: design draft; not implemented.** This pattern is instantiated independently for entity A and entity B, in Malaysia P and Singapore R. R is preprovisioned but payment processing remains fenced until approved recovery activation.
 
-```mermaid
-flowchart TB
-  internet["Internet channels"]
-  onprem["On-premises consumers via DX / VPN / TGW"]
-  partners["Payment partners"]
+![Logical architecture: WAF and ALBs, platform namespace with Kong, KIC and controllers, application namespaces, Aurora, SQS, S3, Secrets Manager and Pod Identity](logical-architecture.png)
 
-  subgraph workload["One entity workload account  -  one regional instance"]
-    subgraph ingress["VPC ingress boundary  -  public and private entry points"]
-      waf["AWS WAF web ACL"]
-      alb["Internet-facing Application Load Balancer<br/>AWS Load Balancer Controller owned"]
-      ialb["Private internal ALB<br/>AWS Load Balancer Controller owned"]
-    end
-    subgraph eks["Private EKS data plane  -  AZ-a / AZ-b / AZ-c"]
-      subgraph platform["Platform namespace / privileged trust boundary"]
-        kong["Self-hosted DB-less Kong<br/>At least 3 replicas spread across AZs"]
-        kic["Kong Ingress Controller (KIC)"]
-        policy["GatewayClass / Gateway / allowedRoutes<br/>Baseline authentication and plugin policy"]
-        lbc["AWS Load Balancer Controller"]
-      end
-      subgraph app["Application namespaces  -  scoped RBAC"]
-        route["Approved namespaced HTTPRoutes"]
-        svc["ClusterIP services -> payment pods<br/>Authorization + idempotency"]
-        workers["Outbox publisher / queue workers<br/>Fenced external submitters"]
-      end
-    end
-    subgraph data["Private data / AWS service boundary"]
-      aurora["Aurora PostgreSQL<br/>Single regional writer + readers<br/>Regional storage replicated across AZs"]
-      sqs["Regional Amazon SQS + DLQ"]
-      s3["Private Amazon S3 + SSE-KMS"]
-      secrets["AWS Secrets Manager / KMS"]
-      identity["EKS Pod Identity -> scoped IAM"]
-    end
-    egress["Controlled egress<br/>Routed AWS Network Firewall paths"]
-    observability["CloudWatch metrics / alarms / redacted logs"]
-  end
-
-  internet -->|"HTTPS; WAF attached to public ALB"| waf
-  waf --> alb
-  onprem -->|"Private HTTPS / approved identity"| ialb
-  alb -->|"Restricted target SG; TLS"| kong
-  ialb -->|"Restricted target SG; TLS"| kong
-  kong -->|"TLS / mTLS; no direct public service"| svc
-  lbc -.->|"Reconciles dedicated Kong-fronting ALBs"| alb
-  lbc -.->|"Reconciles dedicated Kong-fronting ALBs"| ialb
-  policy -.-> kic
-  route -.->|"Namespace and route admission checks"| kic
-  kic -.->|"Private Admin API; controlled credentials"| kong
-  svc -->|"Atomic ledger + outbox transaction"| aurora
-  workers -->|"Read / mark durable outbox"| aurora
-  workers -->|"Publish / retry"| sqs
-  sqs -->|"At-least-once delivery; deduplicate"| workers
-  workers -->|"Idempotency key; reconcile uncertain outcome"| egress
-  egress -->|"TLS / mTLS"| partners
-  svc --> s3
-  identity -.->|"Service-account-specific permissions"| svc
-  identity -.-> workers
-  svc -->|"Runtime access, not embedded values"| secrets
-  kong --> observability
-  workers --> observability
-```
+Editable source: [logical-architecture.drawio](logical-architecture.drawio) (open in draw.io / diagrams.net).
 
 ## Controller and security contracts
 

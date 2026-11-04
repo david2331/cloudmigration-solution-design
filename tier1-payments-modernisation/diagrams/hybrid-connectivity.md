@@ -1,66 +1,10 @@
 # Hybrid connectivity
 
-**Status: design draft; not implemented or failover-tested.** On-premises connectivity must reach both Malaysia P (`ap-southeast-5`) and Singapore R (`ap-southeast-1`). Cross-border approval is user-confirmed granted; evidence reference remains pending, not regulator-verified.
+**Status: design draft; not implemented or failover-tested.** On-premises connectivity must reach both Malaysia P (`ap-southeast-5`) and Singapore R (`ap-southeast-1`). Cross-border approval is granted per bank confirmation (assumption C05); evidence reference remains pending, not regulator-verified.
 
-```mermaid
-flowchart TB
-  subgraph premises["On-premises trust boundary"]
-    apps["Approved channels / operations / payment systems"]
-    routera["Customer router A / carrier A"]
-    routerb["Customer router B / carrier B"]
-    apps --> routera
-    apps --> routerb
-  end
-  subgraph net["Network account boundary  -  segmented regional routing"]
-    dx1["Direct Connect path A<br/>Diverse location / circuit"]
-    dx2["Direct Connect path B<br/>Independent failure domain"]
-    dxgw["Direct Connect gateway<br/>Transit VIF associations / controlled prefixes"]
-    subgraph malaysia["P Malaysia"]
-      vpnp["Site-to-Site VPN fallback<br/>Independent internet underlay"]
-      tgwp["Transit Gateway<br/>Entity-specific route tables"]
-      subgraph pinspect["Inspection VPC  -  AZ-local endpoints"]
-        npa["AZ-a: Network Firewall endpoint"]
-        npb["AZ-b: Network Firewall endpoint"]
-        npc["AZ-c: Network Firewall endpoint"]
-      end
-    end
-    subgraph singapore["R Singapore"]
-      vpnr["Site-to-Site VPN fallback<br/>Independent internet underlay"]
-      tgwr["Transit Gateway<br/>Entity-specific route tables"]
-      subgraph rinspect["Inspection VPC  -  AZ-local endpoints"]
-        nra["AZ-a: Network Firewall endpoint"]
-        nrb["AZ-b: Network Firewall endpoint"]
-        nrc["AZ-c: Network Firewall endpoint"]
-      end
-    end
-  end
-  subgraph a["entity-a-prod account  -  no default entity B routes"]
-    ap["P private ALB -> Kong -> ClusterIP apps<br/>Private EKS pods across 3 AZs"]
-    ar["R private ALB -> Kong -> ClusterIP apps<br/>Private EKS pods across 3 AZs"]
-  end
-  subgraph b["entity-b-prod account  -  no default entity A routes"]
-    bp["P private ALB -> Kong -> ClusterIP apps<br/>Private EKS pods across 3 AZs"]
-    br["R private ALB -> Kong -> ClusterIP apps<br/>Private EKS pods across 3 AZs"]
-  end
-  routera --> dx1
-  routerb --> dx2
-  dx1 --> dxgw
-  dx2 --> dxgw
-  dxgw -->|"Approved P prefixes"| tgwp
-  dxgw -->|"Approved R prefixes"| tgwr
-  routera -.->|"IPsec fallback"| vpnp
-  routerb -.->|"IPsec fallback"| vpnp
-  routera -.->|"IPsec fallback"| vpnr
-  routerb -.->|"IPsec fallback"| vpnr
-  vpnp --> tgwp
-  vpnr --> tgwr
-  tgwp -->|"Routed inspection; symmetric return"| pinspect
-  tgwr -->|"Routed inspection; symmetric return"| rinspect
-  pinspect -->|"Entity A approved prefixes"| ap
-  pinspect -->|"Entity B approved prefixes"| bp
-  rinspect -->|"Entity A approved prefixes"| ar
-  rinspect -->|"Entity B approved prefixes"| br
-```
+![Hybrid connectivity: diverse Direct Connect paths, Direct Connect gateway, regional Transit Gateways, VPN fallback, per-AZ Network Firewall and entity VPCs in both regions](hybrid-connectivity.png)
+
+Editable source: [hybrid-connectivity.drawio](hybrid-connectivity.drawio) (open in draw.io / diagrams.net).
 
 The diagram aggregates paths for readability: actual TGW attachment, inspection VPC and subnet route tables must explicitly select the correct AZ endpoint and a symmetric return path. It does not imply packets traverse all three firewall endpoints or that one shared route table connects the entities.
 

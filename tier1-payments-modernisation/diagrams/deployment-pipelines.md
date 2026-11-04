@@ -2,51 +2,9 @@
 
 **Status: design draft; not implemented.** Terraform provisions AWS infrastructure; GitHub Actions orchestrates delivery; Helm releases EKS workloads. There are **three delivery layers**. The platform Kubernetes/Kong release is a **subpipeline of foundation**, not a fourth layer.
 
-```mermaid
-flowchart TB
-  subgraph git["GitHub trust boundary"]
-    pr["Untrusted pull requests<br/>Checks only; no deployment credentials"]
-    reviewed["Protected reviewed commit / workflow"]
-    build["Isolated build and scan<br/>Image + chart + provenance"]
-    approval["Protected environment approval<br/>Allowed branches / tags / reviewers"]
-    pr -->|"Review + merge"| reviewed
-    reviewed --> build
-    build --> approval
-  end
-  subgraph tooling["AWS tooling account  -  connected deployment trust boundary"]
-    artifacts["Immutable ECR image digest + OCI chart digest<br/>Signed promotion manifest; approved regional copies"]
-    runner["Ephemeral deployment runners<br/>No PR code; isolated per trust tier"]
-    sts["AWS STS: OIDC exact aud / sub<br/>Separate layer + entity + environment roles"]
-    build -->|"Publish with limited artifact role"| artifacts
-    approval --> runner
-    runner --> sts
-  end
-  subgraph target["Selected entity account + environment  -  P or R"]
-    f["1 Foundation<br/>Terraform: accounts / VPC / EKS / IAM boundaries"]
-    platform["Foundation subpipeline<br/>Helm: controllers / Kong / platform policy"]
-    infra["2 Application infrastructure<br/>Terraform: Aurora / SQS / S3 / IAM / secret metadata / alarms"]
-    app["3 Application code<br/>Helm: services / immutable images / approved HTTPRoutes<br/>Application-owned DB migration logic"]
-    state["S3 Terraform state<br/>Versioning + SSE-KMS + native lockfile<br/>Separate entity / environment / lifecycle states"]
-    eks["Private EKS  -  three AZs<br/>EKS access + namespace-scoped RBAC"]
-    verify["Canary / SLO / payment probes<br/>Approve promotion or compatible rollback"]
-    f --> platform
-    f -->|"Versioned infrastructure outputs"| infra
-    platform -->|"Gateway and policy contract"| app
-    infra -->|"Approved endpoints / identities, no raw secrets"| app
-    f --> state
-    infra --> state
-    platform --> eks
-    app --> eks
-    eks --> verify
-  end
-  sts -->|"Foundation role"| f
-  sts -->|"App-infrastructure role"| infra
-  sts -->|"App-code role + EKS RBAC"| app
-  artifacts -->|"Promote same verified digests"| app
-  artifacts -->|"Pinned platform release artifacts"| platform
-  independent["Independent approved emergency runner<br/>Prepositioned artifacts; no GitHub dependency"]
-  independent -.->|"Audited recovery only; safety gates remain"| eks
-```
+![Deployment pipelines: GitHub trust boundary, platform tooling account, three delivery layers, verification and independent emergency runner](deployment-pipelines.png)
+
+Editable source: [deployment-pipelines.drawio](deployment-pipelines.drawio) (open in draw.io / diagrams.net).
 
 ## Ownership and artifact contracts
 

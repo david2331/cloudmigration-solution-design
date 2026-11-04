@@ -37,4 +37,4 @@ Kong is self-hosted and bank-operated: plugin vulnerabilities, misconfiguration,
 
 Rate limiting protects capacity, not ledger correctness. Per-node counters are not exact global enforcement. ALB TLS termination, Kong token validation and application authorization need separate threat analysis. GitHub availability must not determine ongoing payment service availability.
 
-The [risk register](09-risk-register.md) records unresolved fencing, RPO and plugin decisions; the [ownership RACI](../governance/ownership-model.md) assigns accountability.
+The [risk register](08-risk-register.md) records unresolved fencing, RPO and plugin decisions; the [ownership RACI](../governance/ownership-model.md) assigns accountability.
