@@ -1,6 +1,6 @@
 # Disaster recovery architecture
 
-**Status: design draft; not implemented or exercised.** Each entity recovers independently from Malaysia P (`ap-southeast-5`) to Singapore R (`ap-southeast-1`). Cross-border approval is granted per bank confirmation (assumption C05); evidence reference is pending and is not regulator-verified.
+Each entity recovers independently from Malaysia P (`ap-southeast-5`) to Singapore R (`ap-southeast-1`).
 
 ![DR architecture: recovery authority, P and R regions, safety gate, Aurora asynchronous replication, recovery account and external partners](dr-architecture.png)
 

@@ -2,9 +2,7 @@
 
 **Selected cloud: AWS. Task 7 (10%). Status: proposed architecture; EKS/Helm is the bank platform standard.**
 
-An **ADR (Architecture Decision Record)** captures a significant decision, why it was made, alternatives rejected, consequences, risks and review triggers. It preserves reasoning so later teams can revisit a decision without reconstructing the original debate.
-
-The challenge response below is approximately two pages of narrative; final pagination depends on export formatting. The supporting compact records after it are separate from that two-page-equivalent response.
+The challenge response below is the two-page decision record; the compact records after it support it.
 
 ## Challenge response
 

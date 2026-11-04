@@ -1,6 +1,6 @@
 # Logical architecture
 
-**Status: design draft; not implemented.** This pattern is instantiated independently for entity A and entity B, in Malaysia P and Singapore R. R is preprovisioned but payment processing remains fenced until approved recovery activation.
+This pattern is instantiated independently for entity A and entity B, in Malaysia P and Singapore R. R is preprovisioned but payment processing remains fenced until approved recovery activation.
 
 ![Logical architecture: WAF and ALBs, platform namespace with Kong, KIC and controllers, application namespaces, Aurora, SQS, S3, Secrets Manager and Pod Identity](logical-architecture.png)
 

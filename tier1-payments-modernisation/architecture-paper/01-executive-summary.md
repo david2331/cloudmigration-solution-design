@@ -1,6 +1,6 @@
-# Selected cloud: AWS
-
 # Executive architecture summary
+
+**Selected cloud: AWS.**
 
 Modernise the Tier 1 payments platform progressively using independently isolated legal-entity deployments. **Malaysia (`ap-southeast-5`) is primary; Singapore (`ap-southeast-1`) is recovery.** Cross-border permission is granted per bank confirmation (assumption C05); security/compliance must attach the approval record and applicable scope to the implementation evidence.
 

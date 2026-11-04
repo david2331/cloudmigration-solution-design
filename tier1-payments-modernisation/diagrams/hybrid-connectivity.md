@@ -1,6 +1,6 @@
 # Hybrid connectivity
 
-**Status: design draft; not implemented or failover-tested.** On-premises connectivity must reach both Malaysia P (`ap-southeast-5`) and Singapore R (`ap-southeast-1`). Cross-border approval is granted per bank confirmation (assumption C05); evidence reference remains pending, not regulator-verified.
+On-premises connectivity must reach both Malaysia P (`ap-southeast-5`) and Singapore R (`ap-southeast-1`).
 
 ![Hybrid connectivity: diverse Direct Connect paths, Direct Connect gateway, regional Transit Gateways, VPN fallback, per-AZ Network Firewall and entity VPCs in both regions](hybrid-connectivity.png)
 

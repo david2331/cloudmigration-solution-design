@@ -1,6 +1,6 @@
 # Deployment pipelines
 
-**Status: design draft; not implemented.** Terraform provisions AWS infrastructure; GitHub Actions orchestrates delivery; Helm releases EKS workloads. There are **three delivery layers**. The platform Kubernetes/Kong release is a **subpipeline of foundation**, not a fourth layer.
+Terraform provisions AWS infrastructure; GitHub Actions orchestrates delivery; Helm releases EKS workloads. There are **three delivery layers**. The platform Kubernetes/Kong release is a **subpipeline of foundation**, not a fourth layer.
 
 ![Deployment pipelines: GitHub trust boundary, platform tooling account, three delivery layers, verification and independent emergency runner](deployment-pipelines.png)
 

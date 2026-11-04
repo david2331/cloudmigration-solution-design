@@ -1,6 +1,6 @@
 # Payment platform context
 
-**Status: design draft; not implemented or operationally validated.** AWS is the only runtime cloud. P = Malaysia (`ap-southeast-5`); R = Singapore (`ap-southeast-1`). Cross-border approval is **granted per bank confirmation (assumption C05)**; its evidence reference is pending and this is not regulator-verified.
+AWS is the only runtime cloud. P = Malaysia (`ap-southeast-5`); R = Singapore (`ap-southeast-1`).
 
 ![Payment platform context: AWS organization, entity workload accounts in P and R, network, tooling, security and recovery accounts, external actors](context-diagram.png)
 
@@ -18,4 +18,4 @@ Editable source: [context-diagram.drawio](context-diagram.drawio) (open in draw.
 
 [Logical architecture](logical-architecture.md) | [Deployment topology](deployment-architecture.md) | [Hybrid connectivity](hybrid-connectivity.md) | [Recovery](dr-architecture.md) | [Ownership and RACI](../governance/ownership-model.md).
 
-[Provider-native evidence register](../appendix/provider-native-evidence.md): **S1** Control Tower/account governance; **S2** EKS networking; **S5** Aurora global recovery; **S11** Backup Vault Lock; **S13-S14** Direct Connect and Transit Gateway. Source IDs identify required supporting evidence, not proof that this design has been deployed.
+[Provider-native evidence register](../appendix/provider-native-evidence.md): **S1** Control Tower/account governance; **S2** EKS networking; **S5** Aurora global recovery; **S11** Backup Vault Lock; **S13-S14** Direct Connect and Transit Gateway.

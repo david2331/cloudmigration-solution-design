@@ -1,6 +1,6 @@
 # Mandatory architecture diagram
 
-**Selected cloud: AWS. Status: design draft; not implemented or capacity-tested.** P = Malaysia `ap-southeast-5`; R = Singapore `ap-southeast-1`. One legal entity is shown; every other entity has an identical, separate workload account, recovery account, EKS clusters, Aurora clusters and keys.
+**Selected cloud: AWS.** P = Malaysia `ap-southeast-5`; R = Singapore `ap-southeast-1`. One legal entity is shown; every other entity has an identical, separate workload account, recovery account, EKS clusters, Aurora clusters and keys.
 
 ![Mandatory AWS architecture: external trust boundary, AWS Organization, network and security accounts, entity workload account with Malaysia primary and Singapore recovery regions, three AZ failure domains, ingress, Kong, payment services, Aurora, regional services and isolated recovery account](mandatory-architecture.png)
 

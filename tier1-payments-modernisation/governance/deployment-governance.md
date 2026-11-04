@@ -1,6 +1,6 @@
 # Deployment governance
 
-**Status: design draft; not implemented.** Gates below are proposed requirements, not deployed controls or successful test results. Accountability is consolidated in the [ownership model](ownership-model.md); the paper's [threat-control matrix](../architecture-paper/06-threat-control-model.md) is authoritative. The [provider-native evidence register](../appendix/provider-native-evidence.md) contains product documentation sources; bank-specific approval and operational evidence remain to be attached.
+Gates below are proposed requirements. Accountability is in the [ownership model](ownership-model.md); the paper's [threat-control matrix](../architecture-paper/06-threat-control-model.md) is authoritative. Product sources are in the [evidence register](../appendix/provider-native-evidence.md).
 
 ## Delivery and promotion contract
 
@@ -12,7 +12,7 @@ Use AWS, Terraform, GitHub Actions and EKS/Helm across exactly three delivery la
 
 The foundation platform-release subpipeline is not a fourth layer. See [deployment pipelines](../diagrams/deployment-pipelines.md) and [deployment architecture](../diagrams/deployment-architecture.md). Each layer publishes versioned contracts to its consumers; downstream changes must pin compatible versions rather than silently adopting upstream outputs.
 
-P is Malaysia `ap-southeast-5`; R is Singapore `ap-southeast-1`. `entity-a-prod` and `entity-b-prod` remain separate workload accounts, each with separate EKS clusters in P and R. Live Aurora recovery remains in the workload-account topology; separate entity recovery accounts are for immutable backups/clean-room environments only. Shared security tooling, log archive, network and platform tooling accounts retain explicit residency boundaries. Cross-border approval is granted per bank confirmation (assumption C05), with evidence reference pending and no regulator verification.
+P is Malaysia `ap-southeast-5`; R is Singapore `ap-southeast-1`. `entity-a-prod` and `entity-b-prod` remain separate workload accounts, each with separate EKS clusters in P and R. Live Aurora recovery remains in the workload-account topology; separate entity recovery accounts are for immutable backups/clean-room environments only. Shared security tooling, log archive, network and platform tooling accounts retain explicit residency boundaries.
 
 | Promotion | Required immutable record | Gate and execution |
 |---|---|---|
@@ -61,20 +61,11 @@ Keep database changes backward compatible using expand/contract: expand first, r
 
 ## Recovery and GitHub-independent execution
 
-Preprovision and exercise EKS, Kong/controllers/routes, network paths, keys, regional secrets, images/charts and Aurora in R for each entity. Validate diverse Direct Connect paths and VPN fallback to both countries, TLS/mTLS or engineered IPsec (Direct Connect alone is not encryption), TGW entity segmentation and symmetric Network Firewall routing with per-AZ endpoints. Only routed traffic is inspected; TLS decryption is not automatic ([S13](../appendix/provider-native-evidence.md), [S14](../appendix/provider-native-evidence.md)); see [hybrid connectivity](../diagrams/hybrid-connectivity.md).
+Regional recovery follows the ordered sequence in [DR architecture](../diagrams/dr-architecture.md) and the fencing rules in [data and DR](../architecture-paper/05-data-and-dr.md). The delivery-side gates are:
 
-Aurora uses multi-AZ storage and a single writer with readers in the active region; R is a read-only global secondary until promotion. There is one active global write region. Global Database P -> R replication is asynchronous: near-zero is not guaranteed zero regional RPO. The supplied matrix lists Aurora PostgreSQL Global Database availability in both regions, but engine/version, features and capacity still need validation ([S4](../appendix/provider-native-evidence.md), [S5](../appendix/provider-native-evidence.md), [S6](../appendix/provider-native-evidence.md)).
-
-Regional recovery sequence:
-
-1. OPS declares the incident, captures disruption time, assesses dependencies and obtains BUS recovery authorization with Data/Security input.
-2. Fence **old payment submitters and the old database writer before any promotion or traffic switch**. Require positive evidence from the preapproved fencing mechanism; DNS redirection is not fencing. If fencing is unprovable, halt promotion and escalate rather than accept split brain.
-3. DATA assesses replication position and potential loss; APP/DATA identify uncertain commits and external submissions. BUS approves the reconciliation/hold strategy before safe critical journeys resume. Do not claim zero regional loss.
-4. Promote the recovery database only after the fencing gate. Verify writer uniqueness, regional identities/secrets and service readiness while external submitters remain fenced.
-5. Reconcile surviving ledger/outbox records and query external processors for uncertain outcomes before retrying with idempotency keys. SQS is region-local and is **not replicated**; replay only from surviving durable records, explicitly recording gaps ([S12](../appendix/provider-native-evidence.md)). After reconciliation/hold gates and critical-journey validation, switch approved traffic and enable only safe submitters under BUS authorization.
-6. Record restored critical-journey evidence, actual RTO/RPO and reconciliation exceptions. Failback requires a separate approved resynchronization/fencing plan; it is not automatic DNS reversal.
-
-The draft RTO is **<=30 minutes from disruption to safe critical journeys**, not merely database promotion; it is unmeasured. Zero loss is expected for an AZ failure under regional HA, not guaranteed across regional failure. Cyber recovery uses entity recovery-account immutable backups/clean-room environments, with security integrity clearance and separate BUS resumption approval. Validate retention, Vault Lock behavior, restore keys and clean-room isolation; its RTO is separate and unmeasured ([S11](../appendix/provider-native-evidence.md)). See [DR architecture](../diagrams/dr-architecture.md).
+- Preprovision and exercise EKS, Kong/controllers/routes, network paths, keys, regional secrets, images/charts and Aurora in R for each entity.
+- Promote the recovery database only after the fencing gate; enable submitters only under BUS authorization. Failback follows a separate approved plan, not a DNS reversal.
+- Cyber recovery uses entity recovery-account backups, with security integrity clearance and separate BUS resumption approval.
 
 A GitHub outage must not prevent predeployed emergency recovery. Before readiness sign-off, maintain independently approved connected emergency runner access, signed/digested artifacts, promotion manifests and versioned runbooks available **without GitHub**, including required scripts/tools and regional registry access. Use short-lived, permission-controlled emergency identities independent of GitHub OIDC, segregated approvals and tamper-resistant audit logs. Exercise recovery with GitHub inaccessible; do not rely on downloading workflows, actions or runbooks from GitHub during the event. Reconcile emergency changes and evidence when normal delivery returns.
 

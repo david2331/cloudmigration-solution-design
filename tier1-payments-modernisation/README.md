@@ -1,6 +1,6 @@
-# Selected cloud: AWS
-
 # Tier 1 payments modernisation
+
+**Selected cloud: AWS**
 
 **Status: architecture review draft, not an implemented or approved production solution.**
 

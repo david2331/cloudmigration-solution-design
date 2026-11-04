@@ -1,6 +1,6 @@
 # Deployment architecture
 
-**Status: design draft; not implemented or capacity-tested.** P = Malaysia `ap-southeast-5`; R = Singapore `ap-southeast-1`. AZ-a/b/c below are logical slots: map actual AZ IDs and supported capacity per account, rather than assuming identical AZ names across accounts.
+P = Malaysia `ap-southeast-5`; R = Singapore `ap-southeast-1`. AZ-a/b/c below are logical slots: map actual AZ IDs and supported capacity per account, rather than assuming identical AZ names across accounts.
 
 ## Account and regional topology
 
@@ -27,8 +27,8 @@ Editable source: [deployment-regional-cell.drawio](deployment-regional-cell.draw
 - The existing AWS matrix lists Aurora PostgreSQL Global Database support in both P and R. Final engine version, features, instance classes, quotas and capacity must be checked before approval. Validate all required EKS, controller, endpoint, backup and network features in each region as well.
 - Terraform owns AWS provisioning; Helm owns Kubernetes workloads, with explicit controller-owned AWS-resource exceptions such as ALBs. Never declare the same resource in two states or under competing reconcilers.
 - Preposition R images/chart digests, routes, keys, certificates, secrets, DNS, network and database capacity. Do not rely on cross-region KMS keys or secret values becoming available automatically.
-- Residency controls apply separately to logs, findings, state, artifacts and backup copies. Cross-border approval is granted per bank confirmation (assumption C05); evidence reference remains pending, not regulator-verified.
+- Residency controls apply separately to logs, findings, state, artifacts and backup copies.
 
 [Logical flow and control ownership](logical-architecture.md) | [DR architecture](dr-architecture.md) | [Hybrid networking](hybrid-connectivity.md) | [Delivery governance](../governance/deployment-governance.md).
 
-[Provider-native evidence](../appendix/provider-native-evidence.md): **S1** Control Tower; **S2-S3** EKS networking/Pod Identity; **S4** Aurora HA; **S5** global recovery; **S6** region support; **S9-S10** Kong DB-less/KIC; **S11** Backup Vault Lock. These references do not establish deployed readiness.
+[Provider-native evidence](../appendix/provider-native-evidence.md): **S1** Control Tower; **S2-S3** EKS networking/Pod Identity; **S4** Aurora HA; **S5** global recovery; **S6** region support; **S9-S10** Kong DB-less/KIC; **S11** Backup Vault Lock.
